@@ -1,59 +1,91 @@
 <template>
-  <div class="page">
-    <h3>Đăng ký Độc giả</h3>
+  <div class="container mt-5">
+    <h2>Đăng ký tài khoản độc giả</h2>
     <form @submit.prevent="register">
       <div class="form-group">
-        <label>Họ tên:</label>
-        <input v-model="form.name" class="form-control" required />
+        <label>Họ tên</label>
+        <input v-model="Ten" class="form-control" required />
       </div>
       <div class="form-group">
-        <label>Email:</label>
-        <input
-          v-model="form.email"
-          class="form-control"
-          required
-          type="email"
-        />
+        <label>Ngày sinh</label>
+        <input type="date" v-model="NgaySinh" class="form-control" required />
       </div>
       <div class="form-group">
-        <label>Mật khẩu:</label>
+        <label>Giới tính</label>
+        <select v-model="Phai" class="form-control">
+          <option value="Nam">Nam</option>
+          <option value="Nữ">Nữ</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Địa chỉ</label>
+        <input v-model="DiaChi" class="form-control" required />
+      </div>
+      <div class="form-group">
+        <label>Điện thoại</label>
+        <input v-model="DienThoai" class="form-control" required />
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input v-model="Email" class="form-control" required />
+      </div>
+      <div class="form-group">
+        <label>Mật khẩu</label>
         <input
-          v-model="form.password"
-          class="form-control"
-          required
           type="password"
+          v-model="Password"
+          class="form-control"
+          required
         />
       </div>
-      <button class="btn btn-success">Đăng ký</button>
+      <button class="btn btn-success mt-3" type="submit">Đăng ký</button>
     </form>
   </div>
 </template>
 
 <script>
 import axios from "axios";
+import { useRouter } from "vue-router";
+
 export default {
-  data() {
-    return {
-      form: { name: "", email: "", password: "" },
-    };
-  },
-  methods: {
-    async register() {
+  setup() {
+    const Ten = ref("");
+    const NgaySinh = ref("");
+    const Phai = ref("");
+    const DiaChi = ref("");
+    const DienThoai = ref("");
+    const Email = ref("");
+    const Password = ref("");
+    const router = useRouter();
+
+    const register = async () => {
       try {
-        await axios.post("/api/docgia/register", this.form);
-        alert("Đăng ký thành công. Hãy đăng nhập.");
-        this.$router.push("/login");
+        await axios.post("http://localhost:3000/api/docgia/register", {
+          Ten,
+          NgaySinh,
+          Phai,
+          DiaChi,
+          DienThoai,
+          Email,
+          Password,
+        });
+        alert("Đăng ký thành công!");
+        router.push("/login");
       } catch (err) {
-        alert("Đăng ký thất bại.");
+        alert("Lỗi đăng ký: " + err.message);
       }
-    },
+    };
+
+    return {
+      Ten,
+      NgaySinh,
+      Phai,
+      DiaChi,
+      DienThoai,
+      Email,
+      Password,
+      register,
+    };
   },
 };
 </script>
-
-<style>
-.page {
-  max-width: 500px;
-  margin: 40px auto;
-}
-</style>

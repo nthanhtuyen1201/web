@@ -1,95 +1,102 @@
 <template>
-  <div class="page">
-    <h3>Quản lý nhà xuất bản</h3>
-    <form @submit.prevent="handleSubmit" class="mb-4">
-      <input
-        v-model="nxb.TenNXB"
-        class="form-control mb-2"
-        placeholder="Tên NXB"
-        required
-      />
-      <input
-        v-model="nxb.DiaChi"
-        class="form-control mb-2"
-        placeholder="Địa chỉ"
-        required
-      />
-      <button class="btn btn-primary">
-        {{ nxb._id ? "Cập nhật" : "Thêm mới" }}
+  <div class="container mt-5">
+    <h2>Quản lý Nhà xuất bản</h2>
+
+    <form @submit.prevent="submitForm" class="mb-4">
+      <div class="form-group">
+        <label>Mã NXB</label>
+        <input v-model="form.MaNXB" class="form-control" required />
+      </div>
+      <div class="form-group">
+        <label>Tên NXB</label>
+        <input v-model="form.TenNXB" class="form-control" required />
+      </div>
+      <div class="form-group">
+        <label>Địa chỉ</label>
+        <input v-model="form.DiaChi" class="form-control" required />
+      </div>
+      <button class="btn btn-success mt-2">
+        {{ editing ? "Cập nhật" : "Thêm mới" }}
       </button>
       <button
-        v-if="nxb._id"
-        @click.prevent="reset"
-        class="btn btn-secondary ml-2"
+        class="btn btn-secondary mt-2 ml-2"
+        type="button"
+        @click="resetForm"
       >
-        Hủy
+        Huỷ
       </button>
     </form>
 
-    <ul class="list-group">
-      <li
-        v-for="item in danhSach"
-        :key="item._id"
-        class="list-group-item d-flex justify-content-between align-items-center"
-      >
-        <div>
-          <strong>{{ item.TenNXB }}</strong> - {{ item.DiaChi }}
-        </div>
-        <div>
-          <button class="btn btn-sm btn-warning mr-2" @click="edit(item)">
-            Sửa
-          </button>
-          <button class="btn btn-sm btn-danger" @click="remove(item._id)">
-            Xóa
-          </button>
-        </div>
-      </li>
-    </ul>
+    <table class="table table-bordered">
+      <thead>
+        <tr>
+          <th>Mã NXB</th>
+          <th>Tên NXB</th>
+          <th>Địa chỉ</th>
+          <th>Hành động</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="item in publishers" :key="item._id">
+          <td>{{ item.MaNXB }}</td>
+          <td>{{ item.TenNXB }}</td>
+          <td>{{ item.DiaChi }}</td>
+          <td>
+            <button class="btn btn-sm btn-info" @click="edit(item)">Sửa</button>
+            <button class="btn btn-sm btn-danger" @click="del(item._id)">
+              Xoá
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 </template>
 
 <script>
-import axios from "axios";
+import PublisherService from "../../services/publisher.service";
+
 export default {
   data() {
     return {
-      danhSach: [],
-      nxb: { TenNXB: "", DiaChi: "" },
+      publishers: [],
+      form: { MaNXB: "", TenNXB: "", DiaChi: "" },
+      editing: false,
+      editId: null,
     };
   },
   methods: {
-    async fetchData() {
-      const res = await axios.get("/api/nxb");
-      this.danhSach = res.data;
+    async fetchAll() {
+      this.publishers = await PublisherService.getAll();
     },
-    async handleSubmit() {
-      if (this.nxb._id) await axios.put(`/api/nxb/${this.nxb._id}`, this.nxb);
-      else await axios.post("/api/nxb", this.nxb);
-      this.reset();
-      this.fetchData();
+    async submitForm() {
+      if (this.editing) {
+        await PublisherService.update(this.editId, this.form);
+      } else {
+        await PublisherService.create(this.form);
+      }
+      this.resetForm();
+      this.fetchAll();
     },
-    edit(nxb) {
-      this.nxb = { ...nxb };
+    edit(p) {
+      this.form = { ...p };
+      this.editId = p._id;
+      this.editing = true;
     },
-    async remove(id) {
-      if (confirm("Bạn có chắc muốn xóa?")) {
-        await axios.delete(`/api/nxb/${id}`);
-        this.fetchData();
+    async del(id) {
+      if (confirm("Xoá nhà xuất bản này?")) {
+        await PublisherService.delete(id);
+        this.fetchAll();
       }
     },
-    reset() {
-      this.nxb = { TenNXB: "", DiaChi: "" };
+    resetForm() {
+      this.editing = false;
+      this.editId = null;
+      this.form = { MaNXB: "", TenNXB: "", DiaChi: "" };
     },
   },
   mounted() {
-    this.fetchData();
+    this.fetchAll();
   },
 };
 </script>
-
-<style>
-.page {
-  max-width: 800px;
-  margin: 30px auto;
-}
-</style>

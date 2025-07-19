@@ -1,129 +1,151 @@
 <template>
-  <div class="page">
-    <h3>Quản lý sách</h3>
-    <form @submit.prevent="handleSubmit" class="mb-4">
+  <div class="container mt-5">
+    <h2>Quản lý sách</h2>
+
+    <!-- Form thêm/sửa -->
+    <form @submit.prevent="submitForm" class="mb-4">
       <div class="form-group">
-        <input
-          v-model="book.TenSach"
-          class="form-control"
-          placeholder="Tên sách"
-          required
-        />
+        <label>Tên sách</label>
+        <input v-model="form.TenSach" class="form-control" required />
       </div>
       <div class="form-group">
-        <input
-          v-model="book.TacGia"
-          class="form-control"
-          placeholder="Tác giả"
-          required
-        />
+        <label>Tác giả</label>
+        <input v-model="form.TacGia" class="form-control" required />
       </div>
       <div class="form-group">
+        <label>Năm xuất bản</label>
         <input
-          v-model="book.NamXuatBan"
+          v-model="form.NamXuatBan"
           class="form-control"
-          placeholder="Năm xuất bản"
-          required
           type="number"
-        />
-      </div>
-      <div class="form-group">
-        <input
-          v-model="book.MaNXB"
-          class="form-control"
-          placeholder="Mã NXB"
           required
         />
       </div>
       <div class="form-group">
+        <label>Số quyển</label>
         <input
-          v-model="book.SoQuyen"
+          v-model="form.SoQuyen"
           class="form-control"
-          placeholder="Số quyển"
-          required
           type="number"
+          required
         />
       </div>
-      <button class="btn btn-primary">
-        {{ book._id ? "Cập nhật" : "Thêm mới" }}
+      <div class="form-group">
+        <label>Đơn giá</label>
+        <input
+          v-model="form.DonGia"
+          class="form-control"
+          type="number"
+          required
+        />
+      </div>
+      <div class="form-group">
+        <label>Mã NXB</label>
+        <input v-model="form.MaNXB" class="form-control" required />
+      </div>
+
+      <button class="btn btn-success mt-2">
+        {{ editing ? "Cập nhật" : "Thêm mới" }}
       </button>
       <button
-        v-if="book._id"
-        class="btn btn-secondary ml-2"
-        @click.prevent="reset"
+        class="btn btn-secondary mt-2 ml-2"
+        type="button"
+        @click="resetForm"
       >
-        Hủy
+        Huỷ
       </button>
     </form>
 
-    <ul class="list-group">
-      <li
-        v-for="s in books"
-        :key="s._id"
-        class="list-group-item d-flex justify-content-between align-items-center"
-      >
-        <div>
-          <strong>{{ s.TenSach }}</strong> - {{ s.TacGia }} ({{ s.NamXuatBan }})
-          - SL: {{ s.SoQuyen }}
-        </div>
-        <div>
-          <button class="btn btn-sm btn-warning mr-2" @click="editBook(s)">
-            Sửa
-          </button>
-          <button class="btn btn-sm btn-danger" @click="deleteBook(s._id)">
-            Xóa
-          </button>
-        </div>
-      </li>
-    </ul>
+    <!-- Danh sách sách -->
+    <table class="table table-bordered">
+      <thead>
+        <tr>
+          <th>Tên sách</th>
+          <th>Tác giả</th>
+          <th>Năm</th>
+          <th>Số quyển</th>
+          <th>Giá</th>
+          <th>NXB</th>
+          <th>Hành động</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="book in books" :key="book._id">
+          <td>{{ book.TenSach }}</td>
+          <td>{{ book.TacGia }}</td>
+          <td>{{ book.NamXuatBan }}</td>
+          <td>{{ book.SoQuyen }}</td>
+          <td>{{ book.DonGia }}</td>
+          <td>{{ book.MaNXB }}</td>
+          <td>
+            <button class="btn btn-sm btn-info" @click="edit(book)">Sửa</button>
+            <button class="btn btn-sm btn-danger" @click="del(book._id)">
+              Xoá
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 </template>
 
 <script>
 import axios from "axios";
+
 export default {
   data() {
     return {
       books: [],
-      book: {
+      form: {
         TenSach: "",
         TacGia: "",
         NamXuatBan: "",
+        SoQuyen: "",
+        DonGia: "",
         MaNXB: "",
-        SoQuyen: 1,
       },
+      editing: false,
+      editId: null,
     };
   },
   methods: {
     async fetchBooks() {
-      const res = await axios.get("/api/sach");
+      const res = await axios.get("http://localhost:3000/api/sach");
       this.books = res.data;
     },
-    async handleSubmit() {
-      if (this.book._id) {
-        await axios.put(`/api/sach/${this.book._id}`, this.book);
+    async submitForm() {
+      if (this.editing) {
+        await axios.put(
+          `http://localhost:3000/api/sach/${this.editId}`,
+          this.form
+        );
       } else {
-        await axios.post("/api/sach", this.book);
+        await axios.post("http://localhost:3000/api/sach", this.form);
       }
-      this.reset();
+      this.resetForm();
       this.fetchBooks();
     },
-    editBook(book) {
-      this.book = { ...book };
+    edit(book) {
+      this.editing = true;
+      this.editId = book._id;
+      this.form = { ...book };
     },
-    async deleteBook(id) {
-      if (confirm("Bạn có chắc chắn muốn xoá sách này?")) {
-        await axios.delete(`/api/sach/${id}`);
+    async del(id) {
+      if (confirm("Xoá sách này?")) {
+        await axios.delete(`http://localhost:3000/api/sach/${id}`);
         this.fetchBooks();
       }
     },
-    reset() {
-      this.book = {
+    resetForm() {
+      this.editing = false;
+      this.editId = null;
+      this.form = {
         TenSach: "",
         TacGia: "",
         NamXuatBan: "",
+        SoQuyen: "",
+        DonGia: "",
         MaNXB: "",
-        SoQuyen: 1,
       };
     },
   },
@@ -132,10 +154,3 @@ export default {
   },
 };
 </script>
-
-<style>
-.page {
-  max-width: 800px;
-  margin: 30px auto;
-}
-</style>

@@ -1,67 +1,72 @@
 <template>
-  <div class="page">
-    <h3>Đăng nhập</h3>
+  <div class="container mt-5">
+    <h2>Đăng nhập</h2>
     <form @submit.prevent="login">
       <div class="form-group">
-        <label>Email:</label>
+        <label>Email hoặc MSNV</label>
+        <input v-model="username" class="form-control" required />
+      </div>
+      <div class="form-group">
+        <label>Mật khẩu</label>
         <input
-          v-model="form.email"
-          type="email"
+          type="password"
+          v-model="password"
           class="form-control"
           required
         />
       </div>
       <div class="form-group">
-        <label>Mật khẩu:</label>
-        <input
-          v-model="form.password"
-          type="password"
-          class="form-control"
-          required
-        />
+        <label>Loại tài khoản:</label>
+        <select v-model="role" class="form-control">
+          <option value="docgia">Độc giả</option>
+          <option value="nhanvien">Nhân viên</option>
+        </select>
       </div>
-      <button class="btn btn-primary">Đăng nhập</button>
+      <button class="btn btn-primary mt-3" type="submit">Đăng nhập</button>
     </form>
   </div>
 </template>
 
 <script>
 import axios from "axios";
+import { useUserStore } from "../stores/user";
+import { useRouter } from "vue-router";
+
 export default {
-  data() {
-    return {
-      form: { email: "", password: "" },
-    };
-  },
-  methods: {
-    async login() {
+  setup() {
+    const username = ref("");
+    const password = ref("");
+    const role = ref("docgia");
+    const userStore = useUserStore();
+    const router = useRouter();
+
+    const login = async () => {
       try {
-        const resDG = await axios.post("/api/docgia/login", this.form);
-        localStorage.setItem(
-          "user",
-          JSON.stringify({ ...resDG.data, role: "docgia" })
-        );
-        this.$router.push("/books");
-      } catch (e1) {
-        try {
-          const resNV = await axios.post("/api/nhanvien/login", this.form);
-          localStorage.setItem(
-            "user",
-            JSON.stringify({ ...resNV.data, role: "nhanvien" })
-          );
-          this.$router.push("/admin/books");
-        } catch (e2) {
-          alert("Sai tài khoản hoặc mật khẩu");
-        }
+        const endpoint =
+          role.value === "docgia"
+            ? "http://localhost:3000/api/docgia/login"
+            : "http://localhost:3000/api/nhanvien/login";
+
+        const res = await axios.post(endpoint, {
+          emailOrMSNV: username.value,
+          password: password.value,
+        });
+
+        const userData = {
+          ...res.data.user,
+          role: role.value,
+          token: res.data.token,
+        };
+        userStore.setUser(userData);
+
+        if (role.value === "nhanvien") router.push("/admin/books");
+        else router.push("/books");
+      } catch (err) {
+        alert("Sai thông tin đăng nhập");
       }
-    },
+    };
+
+    return { username, password, role, login };
   },
 };
 </script>
-
-<style>
-.page {
-  max-width: 500px;
-  margin: 40px auto;
-}
-</style>

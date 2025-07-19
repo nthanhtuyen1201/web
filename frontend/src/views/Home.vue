@@ -1,13 +1,12 @@
 <template>
-  <div class="text-center mt-5">
-    <h1>Hệ thống Quản lý Mượn Sách</h1>
-    <router-link to="/login" class="btn btn-primary m-2">Đăng nhập</router-link>
-    <router-link to="/register" class="btn btn-success m-2"
-      >Đăng ký</router-link
+  <div class="container mt-5 text-center">
+    <h1>Hệ thống quản lý mượn sách</h1>
+    <p class="lead mt-3">
+      Chào mừng bạn đến với thư viện trực tuyến. Bạn có thể tìm sách, đăng ký
+      tài khoản độc giả và gửi yêu cầu mượn sách.
+    </p>
+    <router-link to="/books" class="btn btn-primary mt-3"
+      >Xem danh sách sách</router-link
     >
   </div>
 </template>
-
-<script>
-export default { name: "Home" };
-</script>

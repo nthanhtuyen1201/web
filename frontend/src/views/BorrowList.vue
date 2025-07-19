@@ -1,54 +1,51 @@
 <template>
-  <div class="page">
-    <h3>Lịch sử mượn sách</h3>
-    <ul class="list-group">
-      <li
-        v-for="phieu in danhSach"
-        :key="phieu._id"
-        class="list-group-item d-flex justify-content-between align-items-center"
-      >
-        <div>
-          <div><strong>Mã sách:</strong> {{ phieu.MaSach }}</div>
-          <div>
-            <strong>Ngày mượn:</strong> {{ formatDate(phieu.NgayMuon) }}
-          </div>
-          <div v-if="phieu.NgayTra">
-            <strong>Ngày trả:</strong> {{ formatDate(phieu.NgayTra) }}
-          </div>
-          <div><strong>Trạng thái:</strong> {{ phieu.TrangThai }}</div>
-        </div>
-      </li>
-    </ul>
+  <div class="container mt-5">
+    <h2>Lịch sử mượn sách</h2>
+    <table class="table table-bordered">
+      <thead>
+        <tr>
+          <th>Sách</th>
+          <th>Ngày mượn</th>
+          <th>Ngày trả</th>
+          <th>Trạng thái</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="item in muons" :key="item._id">
+          <td>{{ item.MaSach?.TenSach || "..." }}</td>
+          <td>{{ format(item.NgayMuon) }}</td>
+          <td>{{ item.NgayTra ? format(item.NgayTra) : "Chưa trả" }}</td>
+          <td>{{ item.TrangThai }}</td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 </template>
 
 <script>
 import axios from "axios";
+import { useUserStore } from "../stores/user";
+
 export default {
   data() {
-    return {
-      danhSach: [],
-      user: JSON.parse(localStorage.getItem("user")),
-    };
+    return { muons: [] };
   },
   methods: {
-    async fetchHistory() {
-      const res = await axios.get(`/api/muontra/docgia/${this.user.MaDocGia}`);
-      this.danhSach = res.data;
+    format(d) {
+      return new Date(d).toLocaleDateString();
     },
-    formatDate(dateStr) {
-      return new Date(dateStr).toLocaleDateString("vi-VN");
+    async getData() {
+      const user = this.userStore.user;
+      const res = await axios.get(
+        `http://localhost:3000/api/muontra/docgia/${user._id}`
+      );
+      this.muons = res.data;
     },
   },
-  mounted() {
-    this.fetchHistory();
+  created() {
+    this.userStore = useUserStore();
+    this.userStore.loadUserFromLocal();
+    this.getData();
   },
 };
 </script>
-
-<style>
-.page {
-  max-width: 700px;
-  margin: 30px auto;
-}
-</style>
