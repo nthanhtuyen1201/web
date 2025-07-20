@@ -28,6 +28,7 @@
 </template>
 
 <script>
+import { ref } from "vue";
 import axios from "axios";
 import { useUserStore } from "../stores/user";
 import { useRouter } from "vue-router";
@@ -47,7 +48,7 @@ export default {
             ? "http://localhost:3000/api/docgia/login"
             : "http://localhost:3000/api/nhanvien/login";
 
-        const res = await axios.post(endpoint, {
+        const res = await axios.post("http://localhost:3000/api/docgia/login", {
           emailOrMSNV: username.value,
           password: password.value,
         });

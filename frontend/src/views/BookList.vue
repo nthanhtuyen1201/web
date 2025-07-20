@@ -57,6 +57,7 @@ export default {
       books: [],
       search: "",
       defaultImage: "https://via.placeholder.com/200x250?text=No+Image",
+      userStore: useUserStore(),
     };
   },
   computed: {
@@ -66,8 +67,10 @@ export default {
       );
     },
     canBorrow() {
-      const user = this.userStore.user;
-      return user && user.role === "docgia";
+      return (
+        this.userStore.state.currentUser &&
+        this.userStore.state.role === "docgia"
+      );
     },
   },
   methods: {
@@ -81,11 +84,17 @@ export default {
     },
     async muon(bookId) {
       try {
-        const user = this.userStore.user;
+        const user = this.userStore.state.currentUser;
+        if (!user || !user._id) {
+          alert("Bạn cần đăng nhập để mượn sách");
+          return;
+        }
+
         await axios.post("http://localhost:3000/api/muontra", {
           MaDocGia: user._id,
           MaSach: bookId,
         });
+
         alert("Gửi yêu cầu mượn thành công!");
       } catch (err) {
         alert("Lỗi khi gửi yêu cầu mượn sách!");
@@ -94,8 +103,6 @@ export default {
     },
   },
   created() {
-    this.userStore = useUserStore();
-    this.userStore.loadUserFromLocal();
     this.getBooks();
   },
 };

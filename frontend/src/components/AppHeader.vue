@@ -6,10 +6,7 @@
         <li class="nav-item" v-if="!user.state.currentUser">
           <router-link class="nav-link" to="/login">Đăng nhập</router-link>
         </li>
-        <li
-          class="nav-item"
-          v-if="!user.state.currentUser && role === 'docgia'"
-        >
+        <li class="nav-item" v-if="!user.state.currentUser">
           <router-link class="nav-link" to="/register">Đăng ký</router-link>
         </li>
         <li class="nav-item" v-if="user.state.currentUser">

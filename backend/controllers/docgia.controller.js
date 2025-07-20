@@ -18,9 +18,23 @@ exports.register = async (req, res) => {
 };
 
 exports.login = async (req, res) => {
-  const user = await DocGia.findOne({ Email: req.body.Email });
-  if (!user || !(await bcrypt.compare(req.body.Password, user.Password))) {
-    return res.status(400).json({ message: "Sai tài khoản hoặc mật khẩu" });
+  try {
+    const { emailOrMSNV, password } = req.body;
+
+    // tìm theo email
+    const user = await DocGia.findOne({ Email: emailOrMSNV });
+
+    if (!user) {
+      return res.status(400).json({ message: "Sai tài khoản hoặc mật khẩu" });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.Password);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Sai tài khoản hoặc mật khẩu" });
+    }
+
+    res.json({ user }); // có thể thêm token nếu muốn
+  } catch (err) {
+    res.status(500).json({ message: "Lỗi server: " + err.message });
   }
-  res.json(user);
 };

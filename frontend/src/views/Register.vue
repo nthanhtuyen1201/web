@@ -44,6 +44,7 @@
 </template>
 
 <script>
+import { ref } from "vue";
 import axios from "axios";
 import { useRouter } from "vue-router";
 
@@ -51,7 +52,7 @@ export default {
   setup() {
     const Ten = ref("");
     const NgaySinh = ref("");
-    const Phai = ref("");
+    const Phai = ref("Nam");
     const DiaChi = ref("");
     const DienThoai = ref("");
     const Email = ref("");
@@ -61,18 +62,18 @@ export default {
     const register = async () => {
       try {
         await axios.post("http://localhost:3000/api/docgia/register", {
-          Ten,
-          NgaySinh,
-          Phai,
-          DiaChi,
-          DienThoai,
-          Email,
-          Password,
+          Ten: Ten.value,
+          NgaySinh: NgaySinh.value,
+          Phai: Phai.value,
+          DiaChi: DiaChi.value,
+          DienThoai: DienThoai.value,
+          Email: Email.value,
+          Password: Password.value,
         });
         alert("Đăng ký thành công!");
         router.push("/login");
       } catch (err) {
-        alert("Lỗi đăng ký: " + err.message);
+        alert("Lỗi đăng ký: " + (err.response?.data?.message || err.message));
       }
     };
 
