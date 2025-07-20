@@ -43,12 +43,13 @@ export default {
 
     const login = async () => {
       try {
+        // đúng nè: dùng endpoint theo role
         const endpoint =
           role.value === "docgia"
             ? "http://localhost:3000/api/docgia/login"
             : "http://localhost:3000/api/nhanvien/login";
 
-        const res = await axios.post("http://localhost:3000/api/docgia/login", {
+        const res = await axios.post(endpoint, {
           emailOrMSNV: username.value,
           password: password.value,
         });
@@ -64,6 +65,7 @@ export default {
         else router.push("/books");
       } catch (err) {
         alert("Sai thông tin đăng nhập");
+        console.error("Đăng nhập thất bại:", err);
       }
     };
 

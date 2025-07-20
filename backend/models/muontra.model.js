@@ -1,9 +1,15 @@
 const mongoose = require("mongoose");
-const MuonTraSchema = new mongoose.Schema({
-  MaDocGia: Number,
-  MaSach: Number,
-  NgayMuon: Date,
-  NgayTra: Date,
-  TrangThai: { type: String, enum: ["dangmuon", "datra"], default: "dangmuon" },
+
+const muonTraSchema = new mongoose.Schema({
+  MaDocGia: { type: mongoose.Schema.Types.ObjectId, ref: "DocGia", required: true },
+  MaSach: { type: mongoose.Schema.Types.ObjectId, ref: "Sach", required: true },
+  NgayMuon: { type: Date, default: Date.now },
+  NgayTra: { type: Date },
+  TrangThai: {
+    type: String,
+    enum: ["dangmuon", "datra"],
+    default: "dangmuon",
+  },
 });
-module.exports = mongoose.model("MuonTra", MuonTraSchema);
+
+module.exports = mongoose.model("MuonTra", muonTraSchema);

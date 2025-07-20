@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+
 const NhanVienSchema = new mongoose.Schema({
   MaNV: { type: Number, unique: true },
   HoTenNV: String,
@@ -8,4 +9,5 @@ const NhanVienSchema = new mongoose.Schema({
   Email: String,
   Password: String,
 });
+
 module.exports = mongoose.model("NhanVien", NhanVienSchema);

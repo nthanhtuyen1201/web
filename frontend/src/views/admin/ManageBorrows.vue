@@ -1,5 +1,17 @@
 <template>
   <div class="container mt-5">
+    <!-- Nút điều hướng -->
+    <div class="mb-4">
+      <router-link to="/admin/books" class="btn btn-outline-secondary">
+        Quản lý sách
+      </router-link>
+      <router-link to="/admin/borrows" class="btn btn-outline-primary mr-2">
+        Quản lý mượn trả
+      </router-link>
+      <router-link to="/admin/publishers" class="btn btn-outline-secondary">
+        Quản lý nhà xuất bản
+      </router-link>
+    </div>
     <h2>Duyệt yêu cầu mượn sách</h2>
 
     <table class="table table-bordered">

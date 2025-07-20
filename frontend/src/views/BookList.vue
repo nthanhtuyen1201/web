@@ -1,5 +1,14 @@
 <template>
   <div class="container my-4">
+    <div class="mb-4">
+      <router-link to="/books" class="btn btn-outline-primary mr-2">
+        Danh sách sách
+      </router-link>
+      <router-link to="/borrows" class="btn btn-outline-secondary">
+        Xem sách đã mượn
+      </router-link>
+    </div>
+
     <h2 class="mb-4 text-center">Danh sách sách</h2>
 
     <input
@@ -103,6 +112,7 @@ export default {
     },
   },
   created() {
+    this.userStore.loadUserFromLocal(); // QUAN TRỌNG!
     this.getBooks();
   },
 };

@@ -1,5 +1,14 @@
 <template>
   <div class="container mt-5">
+    <!-- Nút điều hướng -->
+    <div class="mb-4">
+      <router-link to="/books" class="btn btn-outline-secondary">
+        Danh sách sách
+      </router-link>
+      <router-link to="/borrows" class="btn btn-outline-primary mr-2">
+        Xem sách đã mượn
+      </router-link>
+    </div>
     <h2>Lịch sử mượn sách</h2>
     <table class="table table-bordered">
       <thead>
@@ -28,23 +37,31 @@ import { useUserStore } from "../stores/user";
 
 export default {
   data() {
-    return { muons: [] };
+    return {
+      muons: [],
+      userStore: useUserStore(),
+    };
   },
   methods: {
     format(d) {
       return new Date(d).toLocaleDateString();
     },
     async getData() {
-      const user = this.userStore.user;
-      const res = await axios.get(
-        `http://localhost:3000/api/muontra/docgia/${user._id}`
-      );
-      this.muons = res.data;
+      this.userStore.loadUserFromLocal(); // đảm bảo lấy từ localStorage
+      const user = this.userStore.state.currentUser;
+      if (!user || !user._id) return;
+
+      try {
+        const res = await axios.get(
+          `http://localhost:3000/api/muontra/docgia/${user._id}`
+        );
+        this.muons = res.data;
+      } catch (err) {
+        console.error("Lỗi khi lấy dữ liệu mượn:", err);
+      }
     },
   },
   created() {
-    this.userStore = useUserStore();
-    this.userStore.loadUserFromLocal();
     this.getData();
   },
 };
