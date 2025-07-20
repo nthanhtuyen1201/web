@@ -12,6 +12,7 @@
         Quản lý nhà xuất bản
       </router-link>
     </div>
+
     <h2>Duyệt yêu cầu mượn sách</h2>
 
     <table class="table table-bordered">
@@ -20,6 +21,8 @@
           <th>Độc giả</th>
           <th>Sách</th>
           <th>Ngày mượn</th>
+          <th>Ngày trả dự kiến</th>
+          <th>Ghi chú</th>
           <th>Trạng thái</th>
           <th>Hành động</th>
         </tr>
@@ -29,19 +32,21 @@
           <td>{{ item.MaDocGia?.Ten || "..." }}</td>
           <td>{{ item.MaSach?.TenSach || "..." }}</td>
           <td>{{ format(item.NgayMuon) }}</td>
-          <td>{{ item.TrangThai }}</td>
+          <td>{{ item.NgayTraDuKien ? format(item.NgayTraDuKien) : "—" }}</td>
+          <td>{{ item.GhiChu || "—" }}</td>
+          <td>{{ hienThiTrangThai(item.TrangThai) }}</td>
           <td>
             <button
-              class="btn btn-sm btn-success"
-              @click="update(item._id, 'da_duyet')"
-              :disabled="item.TrangThai !== 'cho_duyet'"
+              class="btn btn-sm btn-success mr-1"
+              @click="update(item._id, true)"
+              :disabled="item.TrangThai !== 'choduyet'"
             >
               Duyệt
             </button>
             <button
               class="btn btn-sm btn-danger"
-              @click="update(item._id, 'tu_choi')"
-              :disabled="item.TrangThai !== 'cho_duyet'"
+              @click="update(item._id, false)"
+              :disabled="item.TrangThai !== 'choduyet'"
             >
               Từ chối
             </button>
@@ -57,21 +62,47 @@ import axios from "axios";
 
 export default {
   data() {
-    return { requests: [] };
+    return {
+      requests: [],
+    };
   },
   methods: {
     format(date) {
       return new Date(date).toLocaleDateString();
     },
-    async fetchData() {
-      const res = await axios.get("http://localhost:3000/api/muontra");
-      this.requests = res.data;
+    hienThiTrangThai(status) {
+      switch (status) {
+        case "choduyet":
+          return "Chờ duyệt";
+        case "dangmuon":
+          return "Đang mượn";
+        case "datra":
+          return "Đã trả";
+        case "tuchoi":
+          return "Từ chối";
+        default:
+          return status;
+      }
     },
-    async update(id, status) {
-      await axios.put(`http://localhost:3000/api/muontra/${id}`, {
-        TrangThai: status,
-      });
-      this.fetchData();
+    async fetchData() {
+      try {
+        const res = await axios.get("http://localhost:3000/api/muontra");
+        this.requests = res.data;
+      } catch (err) {
+        console.error("Lỗi khi lấy dữ liệu mượn:", err);
+      }
+    },
+    async update(id, chapnhan) {
+      try {
+        await axios.put(`http://localhost:3000/api/muontra/duyet/${id}`, {
+          chapnhan,
+        });
+        alert(chapnhan ? "Đã duyệt thành công!" : "Đã từ chối yêu cầu.");
+        this.fetchData();
+      } catch (err) {
+        console.error("Lỗi khi cập nhật trạng thái:", err);
+        alert("Không thể cập nhật trạng thái!");
+      }
     },
   },
   mounted() {
@@ -79,3 +110,10 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.table th,
+.table td {
+  vertical-align: middle;
+}
+</style>

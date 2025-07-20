@@ -9,22 +9,27 @@
         Xem sách đã mượn
       </router-link>
     </div>
+
     <h2>Lịch sử mượn sách</h2>
-    <table class="table table-bordered">
+    <table class="table table-bordered mt-3">
       <thead>
         <tr>
           <th>Sách</th>
           <th>Ngày mượn</th>
+          <th>Ngày trả dự kiến</th>
           <th>Ngày trả</th>
           <th>Trạng thái</th>
+          <th>Ghi chú</th>
         </tr>
       </thead>
       <tbody>
         <tr v-for="item in muons" :key="item._id">
           <td>{{ item.MaSach?.TenSach || "..." }}</td>
           <td>{{ format(item.NgayMuon) }}</td>
+          <td>{{ item.NgayTraDuKien ? format(item.NgayTraDuKien) : "..." }}</td>
           <td>{{ item.NgayTra ? format(item.NgayTra) : "Chưa trả" }}</td>
           <td>{{ item.TrangThai }}</td>
+          <td>{{ item.GhiChu || "—" }}</td>
         </tr>
       </tbody>
     </table>
@@ -47,7 +52,7 @@ export default {
       return new Date(d).toLocaleDateString();
     },
     async getData() {
-      this.userStore.loadUserFromLocal(); // đảm bảo lấy từ localStorage
+      this.userStore.loadUserFromLocal();
       const user = this.userStore.state.currentUser;
       if (!user || !user._id) return;
 

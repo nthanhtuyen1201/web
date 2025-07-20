@@ -3,35 +3,34 @@ const Sach = require("../models/sach.model");
 
 exports.muon = async (req, res) => {
   try {
-    const { MaDocGia, MaSach } = req.body;
+    const { MaDocGia, MaSach, NgayTraDuKien, GhiChu } = req.body;
 
-    // Kiểm tra đã mượn sách này chưa
     const trc = await MuonTra.findOne({
       MaDocGia,
       MaSach,
-      TrangThai: "dangmuon",
+      TrangThai: { $in: ["dangmuon", "choduyet"] },
     });
+
     if (trc) {
       return res
         .status(400)
-        .json({ message: "Bạn đang mượn sách này rồi." });
+        .json({ message: "Bạn đã gửi yêu cầu hoặc đang mượn sách này rồi." });
     }
 
-    // Tìm sách bằng _id
     const sach = await Sach.findById(MaSach);
     if (!sach || sach.SoQuyen <= 0) {
-      return res.status(400).json({ message: "Sách đã hết hoặc không tồn tại." });
+      return res
+        .status(400)
+        .json({ message: "Sách đã hết hoặc không tồn tại." });
     }
 
-    // Giảm số lượng
-    await Sach.findByIdAndUpdate(MaSach, { $inc: { SoQuyen: -1 } });
-
-    // Tạo phiếu mượn
     const phieu = await MuonTra.create({
       MaDocGia,
       MaSach,
       NgayMuon: new Date(),
-      TrangThai: "dangmuon",
+      NgayTraDuKien,
+      GhiChu,
+      TrangThai: "choduyet",
     });
 
     res.json(phieu);
@@ -41,16 +40,45 @@ exports.muon = async (req, res) => {
   }
 };
 
+exports.duyetMuon = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { chapnhan } = req.body; // true = duyệt, false = từ chối
+
+    const phieu = await MuonTra.findById(id);
+    if (!phieu || phieu.TrangThai !== "choduyet") {
+      return res.status(400).json({ message: "Phiếu không hợp lệ hoặc đã xử lý." });
+    }
+
+    if (chapnhan) {
+      const sach = await Sach.findById(phieu.MaSach);
+      if (!sach || sach.SoQuyen <= 0) {
+        return res.status(400).json({ message: "Sách đã hết." });
+      }
+
+      await Sach.findByIdAndUpdate(phieu.MaSach, { $inc: { SoQuyen: -1 } });
+      phieu.TrangThai = "dangmuon";
+    } else {
+      phieu.TrangThai = "tuchoi";
+    }
+
+    await phieu.save();
+    res.json(phieu);
+  } catch (err) {
+    console.error("Lỗi duyệt phiếu:", err);
+    res.status(500).json({ message: "Lỗi server khi duyệt mượn sách." });
+  }
+};
+
 exports.tra = async (req, res) => {
   try {
     const { id } = req.params;
     const phieu = await MuonTra.findById(id);
-    if (!phieu || phieu.TrangThai === "datra") {
-      return res.status(400).json({ message: "Không hợp lệ." });
+    if (!phieu || phieu.TrangThai !== "dangmuon") {
+      return res.status(400).json({ message: "Phiếu không hợp lệ." });
     }
 
     await Sach.findByIdAndUpdate(phieu.MaSach, { $inc: { SoQuyen: 1 } });
-
     phieu.NgayTra = new Date();
     phieu.TrangThai = "datra";
     await phieu.save();
@@ -64,10 +92,12 @@ exports.tra = async (req, res) => {
 
 exports.getAll = async (req, res) => {
   try {
-    const list = await MuonTra.find().populate("MaSach").populate("MaDocGia");
+    const list = await MuonTra.find()
+      .populate("MaSach")
+      .populate("MaDocGia");
     res.json(list);
   } catch (err) {
-    console.error("Lỗi lấy danh sách mượn:", err);
+    console.error("Lỗi lấy danh sách:", err);
     res.status(500).json({ message: "Lỗi server." });
   }
 };

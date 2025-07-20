@@ -1,5 +1,6 @@
 <template>
   <div class="container my-4">
+    <!-- Điều hướng -->
     <div class="mb-4">
       <router-link to="/books" class="btn btn-outline-primary mr-2">
         Danh sách sách
@@ -17,6 +18,7 @@
       placeholder="Tìm kiếm sách theo tên..."
     />
 
+    <!-- Danh sách sách -->
     <div class="row">
       <div class="col-md-3 mb-4" v-for="book in filteredBooks" :key="book._id">
         <div class="card h-100 shadow-sm">
@@ -40,7 +42,7 @@
             <button
               v-if="canBorrow"
               class="btn btn-success mt-auto"
-              @click="muon(book._id)"
+              @click="openBorrowForm(book._id)"
             >
               MƯỢN SÁCH
             </button>
@@ -53,20 +55,32 @@
     <div v-if="filteredBooks.length === 0" class="text-center text-muted mt-4">
       Không tìm thấy sách nào.
     </div>
+
+    <!-- Form mượn sách -->
+    <BorrowForm
+      v-if="showBorrowForm"
+      :bookId="selectedBookId"
+      @close="showBorrowForm = false"
+    />
   </div>
 </template>
 
 <script>
 import axios from "axios";
 import { useUserStore } from "../stores/user";
+import BorrowForm from "../components/BorrowForm.vue";
 
 export default {
+  components: { BorrowForm },
   data() {
     return {
       books: [],
       search: "",
       defaultImage: "https://via.placeholder.com/200x250?text=No+Image",
       userStore: useUserStore(),
+
+      showBorrowForm: false,
+      selectedBookId: null,
     };
   },
   computed: {
@@ -91,28 +105,13 @@ export default {
         console.error("Lỗi khi lấy danh sách sách:", err);
       }
     },
-    async muon(bookId) {
-      try {
-        const user = this.userStore.state.currentUser;
-        if (!user || !user._id) {
-          alert("Bạn cần đăng nhập để mượn sách");
-          return;
-        }
-
-        await axios.post("http://localhost:3000/api/muontra", {
-          MaDocGia: user._id,
-          MaSach: bookId,
-        });
-
-        alert("Gửi yêu cầu mượn thành công!");
-      } catch (err) {
-        alert("Lỗi khi gửi yêu cầu mượn sách!");
-        console.error(err);
-      }
+    openBorrowForm(bookId) {
+      this.selectedBookId = bookId;
+      this.showBorrowForm = true;
     },
   },
   created() {
-    this.userStore.loadUserFromLocal(); // QUAN TRỌNG!
+    this.userStore.loadUserFromLocal(); // Đảm bảo lấy từ localStorage
     this.getBooks();
   },
 };

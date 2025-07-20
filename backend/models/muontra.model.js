@@ -4,12 +4,14 @@ const muonTraSchema = new mongoose.Schema({
   MaDocGia: { type: mongoose.Schema.Types.ObjectId, ref: "DocGia", required: true },
   MaSach: { type: mongoose.Schema.Types.ObjectId, ref: "Sach", required: true },
   NgayMuon: { type: Date, default: Date.now },
-  NgayTra: { type: Date },
+  NgayTraDuKien: { type: Date, required: true },      
+  NgayTra: { type: Date },                            
+  GhiChu: { type: String },
   TrangThai: {
     type: String,
-    enum: ["dangmuon", "datra"],
-    default: "dangmuon",
-  },
+    enum: ["choduyet", "dangmuon", "datra", "tuchoi"],
+    default: "choduyet"
+  }
 });
 
 module.exports = mongoose.model("MuonTra", muonTraSchema);
