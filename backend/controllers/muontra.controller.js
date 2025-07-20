@@ -73,12 +73,16 @@ exports.duyetMuon = async (req, res) => {
 exports.tra = async (req, res) => {
   try {
     const { id } = req.params;
+
     const phieu = await MuonTra.findById(id);
     if (!phieu || phieu.TrangThai !== "dangmuon") {
       return res.status(400).json({ message: "Phiếu không hợp lệ." });
     }
 
+    // Cập nhật sách: tăng lại số lượng
     await Sach.findByIdAndUpdate(phieu.MaSach, { $inc: { SoQuyen: 1 } });
+
+    // Cập nhật phiếu mượn
     phieu.NgayTra = new Date();
     phieu.TrangThai = "datra";
     await phieu.save();
@@ -89,6 +93,7 @@ exports.tra = async (req, res) => {
     res.status(500).json({ message: "Lỗi server khi trả sách." });
   }
 };
+
 
 exports.getAll = async (req, res) => {
   try {

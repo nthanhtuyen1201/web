@@ -36,6 +36,7 @@
           <td>{{ item.GhiChu || "—" }}</td>
           <td>{{ hienThiTrangThai(item.TrangThai) }}</td>
           <td>
+            <!-- Duyệt -->
             <button
               class="btn btn-sm btn-success mr-1"
               @click="update(item._id, true)"
@@ -43,12 +44,23 @@
             >
               Duyệt
             </button>
+
+            <!-- Từ chối -->
             <button
-              class="btn btn-sm btn-danger"
+              class="btn btn-sm btn-danger mr-1"
               @click="update(item._id, false)"
               :disabled="item.TrangThai !== 'choduyet'"
             >
               Từ chối
+            </button>
+
+            <!-- Trả sách -->
+            <button
+              class="btn btn-sm btn-warning"
+              @click="markReturned(item._id)"
+              :disabled="item.TrangThai !== 'dangmuon'"
+            >
+              Trả sách
             </button>
           </td>
         </tr>
@@ -102,6 +114,16 @@ export default {
       } catch (err) {
         console.error("Lỗi khi cập nhật trạng thái:", err);
         alert("Không thể cập nhật trạng thái!");
+      }
+    },
+    async markReturned(id) {
+      try {
+        await axios.put(`http://localhost:3000/api/muontra/tra/${id}`);
+        alert("Đã xác nhận trả sách thành công!");
+        this.fetchData();
+      } catch (err) {
+        console.error("Lỗi khi trả sách:", err);
+        alert("Không thể xác nhận trả sách.");
       }
     },
   },
