@@ -16,7 +16,11 @@
     <h2>Quản lý sách</h2>
 
     <!-- Form thêm/sửa -->
-    <form @submit.prevent="submitForm" class="mb-4">
+    <form
+      @submit.prevent="submitForm"
+      class="mb-4"
+      enctype="multipart/form-data"
+    >
       <div class="form-group">
         <label>Tên sách</label>
         <input v-model="form.TenSach" class="form-control" required />
@@ -56,6 +60,15 @@
         <label>Mã NXB</label>
         <input v-model="form.MaNXB" class="form-control" required />
       </div>
+      <div class="form-group">
+        <label>Ảnh bìa (tùy chọn)</label>
+        <input
+          type="file"
+          class="form-control-file"
+          @change="onFileChange"
+          accept="image/*"
+        />
+      </div>
 
       <button class="btn btn-success mt-2">
         {{ editing ? "Cập nhật" : "Thêm mới" }}
@@ -73,6 +86,7 @@
     <table class="table table-bordered">
       <thead>
         <tr>
+          <th>Ảnh</th>
           <th>Tên sách</th>
           <th>Tác giả</th>
           <th>Năm</th>
@@ -84,6 +98,19 @@
       </thead>
       <tbody>
         <tr v-for="book in books" :key="book._id">
+          <td>
+            <img
+              v-if="book.AnhBia"
+              :src="
+                book.AnhBia.startsWith('http')
+                  ? book.AnhBia
+                  : 'http://localhost:3000' + book.AnhBia
+              "
+              alt="Ảnh bìa"
+              style="width: 60px; height: 80px; object-fit: cover"
+            />
+            <span v-else>Không có</span>
+          </td>
           <td>{{ book.TenSach }}</td>
           <td>{{ book.TacGia }}</td>
           <td>{{ book.NamXuatBan }}</td>
@@ -119,6 +146,7 @@ export default {
       },
       editing: false,
       editId: null,
+      file: null,
     };
   },
   methods: {
@@ -126,22 +154,51 @@ export default {
       const res = await axios.get("http://localhost:3000/api/sach");
       this.books = res.data;
     },
+    onFileChange(e) {
+      this.file = e.target.files[0];
+    },
     async submitForm() {
+      const formData = new FormData();
+      for (const key in this.form) {
+        formData.append(key, this.form[key]);
+      }
+      if (this.file) {
+        formData.append("AnhBia", this.file);
+      }
+
       if (this.editing) {
         await axios.put(
           `http://localhost:3000/api/sach/${this.editId}`,
-          this.form
+          formData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          }
         );
       } else {
-        await axios.post("http://localhost:3000/api/sach", this.form);
+        await axios.post("http://localhost:3000/api/sach", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
       }
+
       this.resetForm();
       this.fetchBooks();
     },
+
     edit(book) {
       this.editing = true;
       this.editId = book._id;
-      this.form = { ...book };
+      this.form = {
+        TenSach: book.TenSach,
+        TacGia: book.TacGia,
+        NamXuatBan: book.NamXuatBan,
+        SoQuyen: book.SoQuyen,
+        DonGia: book.DonGia,
+        MaNXB: book.MaNXB,
+      };
     },
     async del(id) {
       if (confirm("Xoá sách này?")) {
@@ -160,6 +217,7 @@ export default {
         DonGia: "",
         MaNXB: "",
       };
+      this.file = null;
     },
   },
   mounted() {
@@ -167,3 +225,10 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.table th,
+.table td {
+  vertical-align: middle;
+}
+</style>

@@ -9,6 +9,7 @@ app.use(express.json());
 
 require("./config/db")();
 
+app.use("/uploads", express.static("uploads"));
 app.use("/api/docgia", require("./routes/docgia.route"));
 app.use("/api/nhanvien", require("./routes/nhanvien.route"));
 app.use("/api/sach", require("./routes/sach.route"));

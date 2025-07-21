@@ -7,5 +7,6 @@ const SachSchema = new mongoose.Schema({
   NamXuatBan: Number,
   MaNXB: Number,
   TacGia: String,
+  AnhBia: { type: String },
 });
 module.exports = mongoose.model("Sach", SachSchema);
