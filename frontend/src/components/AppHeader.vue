@@ -19,14 +19,19 @@
 
 <script>
 import { useUserStore } from "@/stores/user";
+import { useRouter } from "vue-router";
 
 export default {
   setup() {
     const user = useUserStore();
+    const router = useRouter();
+
     const logout = () => {
       user.logout();
+      router.push("/");
     };
-    return { user, logout, role: user.state.role };
+
+    return { user, logout };
   },
 };
 </script>

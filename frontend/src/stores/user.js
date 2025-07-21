@@ -26,9 +26,11 @@ export function useUserStore() {
     },
 
     logout() {
-      state.currentUser = null;
-      state.role = '';
-      localStorage.removeItem("user");
-    },
+      this.state.currentUser = null;
+      this.state.role = null;
+      localStorage.removeItem("currentUser");
+      localStorage.removeItem("role");
+    }
+
   };
 }
